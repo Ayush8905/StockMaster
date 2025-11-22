@@ -14,7 +14,7 @@ StockMaster is a modern, full-stack inventory management system designed to digi
 
 ### Tech Stack
 
-**Backend:**
+**Backend:** 
 - Spring Boot 4.0.0 (Java 21)
 - MongoDB Atlas (Cloud Database)
 - JWT Authentication (jjwt 0.12.3)

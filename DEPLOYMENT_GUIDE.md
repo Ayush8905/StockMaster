@@ -6,7 +6,7 @@
 
 ```
 ✅ Backend Server: RUNNING on port 8080
-✅ MongoDB Database: CONNECTED and WORKING
+✅ MongoDB Database: CONNECTED and WORKING ////
 ✅ Authentication: FUNCTIONAL (JWT tokens working)
 ✅ All API Endpoints: TESTED and WORKING
 ✅ Frontend Application: RUNNING on port 3000
