@@ -34,6 +34,9 @@ public class ReceiptService {
     @Autowired
     private StockRepository stockRepository;
 
+    @Autowired
+    private StockLedgerService stockLedgerService;
+
     public List<ReceiptDTO> getAllReceipts() {
         return receiptRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -60,7 +63,7 @@ public class ReceiptService {
 
     public ReceiptDTO createReceipt(ReceiptDTO receiptDTO, String username) {
         // Validate warehouse exists
-        Warehouse warehouse = warehouseRepository.findById(receiptDTO.getWarehouseId())
+        warehouseRepository.findById(receiptDTO.getWarehouseId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + receiptDTO.getWarehouseId()));
 
         // Validate all products exist
@@ -107,7 +110,8 @@ public class ReceiptService {
 
         // Update stock for each item
         for (Receipt.ReceiptItem item : receipt.getItems()) {
-            updateStock(item.getProductId(), receipt.getWarehouseId(), item.getQuantity());
+            updateStock(item.getProductId(), receipt.getWarehouseId(), item.getQuantity(),
+                    receipt.getId(), "RECEIPT", username, item.getProductName(), item.getProductSku());
         }
 
         // Update receipt status
@@ -119,22 +123,44 @@ public class ReceiptService {
         return convertToDTO(validatedReceipt);
     }
 
-    private void updateStock(String productId, String warehouseId, Integer quantity) {
+    private void updateStock(String productId, String warehouseId, Integer quantity,
+                             String referenceId, String referenceType, String username,
+                             String productName, String productSku) {
         Optional<Stock> existingStock = stockRepository.findByProductIdAndWarehouseId(productId, warehouseId);
 
+        Integer quantityBefore;
+        Integer quantityAfter;
+        Stock stock;
+
         if (existingStock.isPresent()) {
-            Stock stock = existingStock.get();
-            stock.setQuantity(stock.getQuantity() + quantity);
+            stock = existingStock.get();
+            quantityBefore = stock.getQuantity();
+            quantityAfter = quantityBefore + quantity;
+            stock.setQuantity(quantityAfter);
             stock.setLastUpdated(LocalDateTime.now());
-            stockRepository.save(stock);
         } else {
-            Stock newStock = new Stock();
-            newStock.setProductId(productId);
-            newStock.setWarehouseId(warehouseId);
-            newStock.setQuantity(quantity);
-            newStock.setLastUpdated(LocalDateTime.now());
-            stockRepository.save(newStock);
+            stock = new Stock();
+            stock.setProductId(productId);
+            stock.setWarehouseId(warehouseId);
+            quantityBefore = 0;
+            quantityAfter = quantity;
+            stock.setQuantity(quantityAfter);
+            stock.setLastUpdated(LocalDateTime.now());
         }
+
+        stockRepository.save(stock);
+
+        // Log stock change in ledger
+        Optional<Warehouse> warehouse = warehouseRepository.findById(warehouseId);
+        String warehouseName = warehouse.map(Warehouse::getName).orElse("Unknown");
+
+        stockLedgerService.logStockChange(
+                productId, productName, productSku,
+                warehouseId, warehouseName,
+                "RECEIPT", quantityBefore, quantity, quantityAfter,
+                referenceId, referenceType,
+                username, username, "Stock increased via receipt validation"
+        );
     }
 
     public void deleteReceipt(String id) {

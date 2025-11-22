@@ -79,9 +79,15 @@ public class StockController {
     @PutMapping("/adjust")
     public ResponseEntity<?> adjustStock(@RequestParam String productId,
                                         @RequestParam String warehouseId,
-                                        @RequestParam Integer adjustment) {
+                                        @RequestParam Integer adjustment,
+                                        @RequestParam(required = false) String userId,
+                                        @RequestParam(required = false) String userName,
+                                        @RequestParam(required = false) String reason) {
         try {
-            StockDTO adjustedStock = stockService.adjustStock(productId, warehouseId, adjustment);
+            StockDTO adjustedStock = stockService.adjustStock(productId, warehouseId, adjustment,
+                    userId != null ? userId : "system",
+                    userName != null ? userName : "System",
+                    reason);
             return ResponseEntity.ok(adjustedStock);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

@@ -34,6 +34,9 @@ public class DeliveryService {
     @Autowired
     private StockRepository stockRepository;
 
+    @Autowired
+    private StockLedgerService stockLedgerService;
+
     public List<DeliveryDTO> getAllDeliveries() {
         return deliveryRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -123,7 +126,8 @@ public class DeliveryService {
 
         // Update stock for each item (decrease quantity)
         for (Delivery.DeliveryItem item : delivery.getItems()) {
-            decreaseStock(item.getProductId(), delivery.getWarehouseId(), item.getQuantity());
+            decreaseStock(item.getProductId(), delivery.getWarehouseId(), item.getQuantity(),
+                    delivery.getId(), "DELIVERY", username, item.getProductName(), item.getProductSku());
         }
 
         // Update delivery status
@@ -135,18 +139,35 @@ public class DeliveryService {
         return convertToDTO(validatedDelivery);
     }
 
-    private void decreaseStock(String productId, String warehouseId, Integer quantity) {
+    private void decreaseStock(String productId, String warehouseId, Integer quantity,
+                               String referenceId, String referenceType, String username,
+                               String productName, String productSku) {
         Stock stock = stockRepository.findByProductIdAndWarehouseId(productId, warehouseId)
                 .orElseThrow(() -> new RuntimeException("Stock not found for product in warehouse"));
 
-        if (stock.getQuantity() < quantity) {
-            throw new RuntimeException("Insufficient stock. Available: " + stock.getQuantity() + 
+        Integer quantityBefore = stock.getQuantity();
+
+        if (quantityBefore < quantity) {
+            throw new RuntimeException("Insufficient stock. Available: " + quantityBefore + 
                     ", Requested: " + quantity);
         }
 
-        stock.setQuantity(stock.getQuantity() - quantity);
+        Integer quantityAfter = quantityBefore - quantity;
+        stock.setQuantity(quantityAfter);
         stock.setLastUpdated(LocalDateTime.now());
         stockRepository.save(stock);
+
+        // Log stock change in ledger
+        Optional<Warehouse> warehouse = warehouseRepository.findById(warehouseId);
+        String warehouseName = warehouse.map(Warehouse::getName).orElse("Unknown");
+
+        stockLedgerService.logStockChange(
+                productId, productName, productSku,
+                warehouseId, warehouseName,
+                "DELIVERY", quantityBefore, -quantity, quantityAfter,
+                referenceId, referenceType,
+                username, username, "Stock decreased via delivery validation"
+        );
     }
 
     public void deleteDelivery(String id) {

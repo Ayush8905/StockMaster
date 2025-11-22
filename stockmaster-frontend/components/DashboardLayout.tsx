@@ -15,6 +15,8 @@ import {
     Menu,
     X,
     User,
+    ArrowLeftRight,
+    FileText,
 } from 'lucide-react';
 
 const navigation = [
@@ -24,6 +26,8 @@ const navigation = [
     { name: 'Stock', href: '/stock', icon: Box },
     { name: 'Receipts', href: '/receipts', icon: TrendingUp },
     { name: 'Deliveries', href: '/deliveries', icon: TrendingDown },
+    { name: 'Transfers', href: '/transfers', icon: ArrowLeftRight },
+    { name: 'Ledger', href: '/ledger', icon: FileText },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -57,8 +61,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                         key={item.name}
                                         href={item.href}
                                         className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${isActive
-                                                ? 'bg-indigo-50 text-indigo-600'
-                                                : 'text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-indigo-50 text-indigo-600'
+                                            : 'text-gray-700 hover:bg-gray-100'
                                             }`}
                                         onClick={() => setSidebarOpen(false)}
                                     >
@@ -86,8 +90,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                     key={item.name}
                                     href={item.href}
                                     className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg ${isActive
-                                            ? 'bg-indigo-50 text-indigo-600'
-                                            : 'text-gray-700 hover:bg-gray-100'
+                                        ? 'bg-indigo-50 text-indigo-600'
+                                        : 'text-gray-700 hover:bg-gray-100'
                                         }`}
                                 >
                                     <item.icon className="mr-3 h-5 w-5" />

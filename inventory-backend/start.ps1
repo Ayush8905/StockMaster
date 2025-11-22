@@ -1,37 +1,36 @@
 # StockMaster Backend Startup Script
-# This script loads environment variables from .env file and starts the backend
-
-Write-Host "==================================" -ForegroundColor Cyan
-Write-Host "  StockMaster Backend Startup" -ForegroundColor Cyan
-Write-Host "==================================" -ForegroundColor Cyan
+Write-Host "=================================" -ForegroundColor Cyan
+Write-Host " StockMaster Backend Startup" -ForegroundColor Cyan
+Write-Host "=================================" -ForegroundColor Cyan
 Write-Host ""
 
 # Set Java Home
 $env:JAVA_HOME = "C:\Program Files\Java\jdk-21"
-Write-Host "✓ Java Home: $env:JAVA_HOME" -ForegroundColor Green
+Write-Host "[OK] Java Home: $env:JAVA_HOME" -ForegroundColor Green
 
-# Load environment variables from .env file
-$envFile = Join-Path $PSScriptRoot ".env"
+# Load .env file
+$envFile = ".\.env"
 if (Test-Path $envFile) {
-    Write-Host "✓ Loading environment variables from .env file..." -ForegroundColor Green
+    Write-Host "[OK] Loading environment variables..." -ForegroundColor Green
     Get-Content $envFile | ForEach-Object {
-        if ($_ -match '^\s*([^#][^=]+)\s*=\s*(.+)\s*$') {
+        if ($_ -match '^([^#][^=]+)=(.+)$') {
             $name = $matches[1].Trim()
             $value = $matches[2].Trim()
+            # Set environment variable in current process
             Set-Item -Path "env:$name" -Value $value
-            Write-Host "  - $name loaded" -ForegroundColor Gray
+            Write-Host "  - $name" -ForegroundColor Gray
         }
     }
+    Write-Host ""
 } else {
-    Write-Host "⚠ Warning: .env file not found. Using default values." -ForegroundColor Yellow
-    Write-Host "  Please create .env file from .env.example" -ForegroundColor Yellow
+    Write-Host "[WARNING] .env file not found!" -ForegroundColor Yellow
+    Write-Host "Create .env from .env.example" -ForegroundColor Yellow
+    Write-Host ""
 }
 
-Write-Host ""
-Write-Host "Starting backend server..." -ForegroundColor Cyan
-Write-Host "Server will be available at: http://localhost:8080" -ForegroundColor Green
-Write-Host "Press Ctrl+C to stop the server" -ForegroundColor Yellow
+Write-Host "Starting backend on http://localhost:8080" -ForegroundColor Green
+Write-Host "Press Ctrl+C to stop" -ForegroundColor Yellow
 Write-Host ""
 
-# Start the backend
+# Start backend
 .\mvnw.cmd spring-boot:run

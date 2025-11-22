@@ -8,20 +8,12 @@ import com.StockMaster.inventory_backend.repositories.ProductRepository;
 import com.StockMaster.inventory_backend.repositories.StockRepository;
 import com.StockMaster.inventory_backend.repositories.WarehouseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.GroupOperation;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 @Service
 public class DashboardService {
@@ -35,8 +27,7 @@ public class DashboardService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+
 
     public DashboardDTO getDashboardData() {
         DashboardDTO dashboard = new DashboardDTO();

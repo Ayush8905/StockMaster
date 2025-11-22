@@ -126,3 +126,40 @@ export interface DashboardData {
     warehouseStats: WarehouseStat[];
     lowStockItems: LowStockItem[];
 }
+
+export interface InternalTransfer {
+    id: string;
+    productId: string;
+    productName: string;
+    productSku: string;
+    fromWarehouseId: string;
+    fromWarehouseName: string;
+    toWarehouseId: string;
+    toWarehouseName: string;
+    quantity: number;
+    status: 'DRAFT' | 'COMPLETED' | 'CANCELLED';
+    notes?: string;
+    createdBy: string;
+    completedBy?: string;
+    createdAt: string;
+    completedAt?: string;
+}
+
+export interface StockLedger {
+    id: string;
+    productId: string;
+    productName: string;
+    productSku: string;
+    warehouseId: string;
+    warehouseName: string;
+    changeType: 'RECEIPT' | 'DELIVERY' | 'ADJUSTMENT' | 'TRANSFER_IN' | 'TRANSFER_OUT';
+    quantityBefore: number;
+    quantityChange: number;
+    quantityAfter: number;
+    referenceId: string;
+    referenceType: 'RECEIPT' | 'DELIVERY' | 'TRANSFER' | 'ADJUSTMENT';
+    userId: string;
+    userName: string;
+    notes?: string;
+    createdAt: string;
+}

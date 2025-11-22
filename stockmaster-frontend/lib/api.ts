@@ -132,6 +132,10 @@ export const stockAPI = {
         const response = await apiClient.get(`/stock/product/${productId}`);
         return response.data;
     },
+    getByProductAndWarehouse: async (productId: string, warehouseId: string) => {
+        const stocks = await apiClient.get(`/stock/product/${productId}`);
+        return stocks.data.find((s: any) => s.warehouseId === warehouseId);
+    },
     getTotalForProduct: async (productId: string) => {
         const response = await apiClient.get(`/stock/product/${productId}/total`);
         return response.data;
@@ -226,6 +230,70 @@ export const deliveriesAPI = {
     },
     delete: async (id: string) => {
         const response = await apiClient.delete(`/deliveries/${id}`);
+        return response.data;
+    },
+};
+
+// Internal Transfers API
+export const transfersAPI = {
+    getAll: async () => {
+        const response = await apiClient.get('/transfers');
+        return response.data;
+    },
+    getById: async (id: string) => {
+        const response = await apiClient.get(`/transfers/${id}`);
+        return response.data;
+    },
+    getByStatus: async (status: string) => {
+        const response = await apiClient.get(`/transfers/status/${status}`);
+        return response.data;
+    },
+    getByProduct: async (productId: string) => {
+        const response = await apiClient.get(`/transfers/product/${productId}`);
+        return response.data;
+    },
+    create: async (data: any) => {
+        const response = await apiClient.post('/transfers', data);
+        return response.data;
+    },
+    complete: async (id: string, completedBy: string) => {
+        const response = await apiClient.put(`/transfers/${id}/complete`, { completedBy });
+        return response.data;
+    },
+    cancel: async (id: string) => {
+        const response = await apiClient.put(`/transfers/${id}/cancel`);
+        return response.data;
+    },
+    delete: async (id: string) => {
+        const response = await apiClient.delete(`/transfers/${id}`);
+        return response.data;
+    },
+};
+
+// Stock Ledger API
+export const ledgerAPI = {
+    getAll: async () => {
+        const response = await apiClient.get('/ledger');
+        return response.data;
+    },
+    getById: async (id: string) => {
+        const response = await apiClient.get(`/ledger/${id}`);
+        return response.data;
+    },
+    getByProduct: async (productId: string) => {
+        const response = await apiClient.get(`/ledger/product/${productId}`);
+        return response.data;
+    },
+    getByWarehouse: async (warehouseId: string) => {
+        const response = await apiClient.get(`/ledger/warehouse/${warehouseId}`);
+        return response.data;
+    },
+    getByChangeType: async (changeType: string) => {
+        const response = await apiClient.get(`/ledger/change-type/${changeType}`);
+        return response.data;
+    },
+    getByDateRange: async (startDate: string, endDate: string) => {
+        const response = await apiClient.get(`/ledger/date-range?startDate=${startDate}&endDate=${endDate}`);
         return response.data;
     },
 };

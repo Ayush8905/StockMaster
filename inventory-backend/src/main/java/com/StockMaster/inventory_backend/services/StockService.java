@@ -27,6 +27,9 @@ public class StockService {
     @Autowired
     private WarehouseRepository warehouseRepository;
 
+    @Autowired
+    private StockLedgerService stockLedgerService;
+
     public List<StockDTO> getAllStock() {
         return stockRepository.findAll().stream()
                 .map(this::convertToDTO)
@@ -53,11 +56,11 @@ public class StockService {
 
     public StockDTO createOrUpdateStock(StockDTO stockDTO) {
         // Validate product exists
-        Product product = productRepository.findById(stockDTO.getProductId())
+        productRepository.findById(stockDTO.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + stockDTO.getProductId()));
 
         // Validate warehouse exists
-        Warehouse warehouse = warehouseRepository.findById(stockDTO.getWarehouseId())
+        warehouseRepository.findById(stockDTO.getWarehouseId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with id: " + stockDTO.getWarehouseId()));
 
         // Check if stock already exists
@@ -84,17 +87,37 @@ public class StockService {
         return convertToDTO(savedStock);
     }
 
-    public StockDTO adjustStock(String productId, String warehouseId, Integer adjustment) {
+    public StockDTO adjustStock(String productId, String warehouseId, Integer adjustment, String userId, String userName, String reason) {
         Stock stock = stockRepository.findByProductIdAndWarehouseId(productId, warehouseId)
                 .orElseThrow(() -> new RuntimeException("Stock not found"));
 
-        stock.setQuantity(stock.getQuantity() + adjustment);
-        if (stock.getQuantity() < 0) {
+        Integer quantityBefore = stock.getQuantity();
+        Integer quantityAfter = quantityBefore + adjustment;
+
+        if (quantityAfter < 0) {
             throw new RuntimeException("Insufficient stock. Cannot reduce below zero.");
         }
 
+        stock.setQuantity(quantityAfter);
         stock.setLastUpdated(LocalDateTime.now());
         Stock updatedStock = stockRepository.save(stock);
+
+        // Log stock change in ledger
+        Product product = productRepository.findById(productId).orElse(null);
+        Warehouse warehouse = warehouseRepository.findById(warehouseId).orElse(null);
+
+        String productName = product != null ? product.getName() : "Unknown";
+        String productSku = product != null ? product.getSku() : "Unknown";
+        String warehouseName = warehouse != null ? warehouse.getName() : "Unknown";
+
+        stockLedgerService.logStockChange(
+                productId, productName, productSku,
+                warehouseId, warehouseName,
+                "ADJUSTMENT", quantityBefore, adjustment, quantityAfter,
+                stock.getId(), "ADJUSTMENT",
+                userId, userName, reason != null ? reason : "Manual stock adjustment"
+        );
+
         return convertToDTO(updatedStock);
     }
 
