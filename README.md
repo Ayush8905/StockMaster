@@ -1064,6 +1064,9 @@ services:
 
 **Current Status:** Zero known issues. All 9 modules fully functional.
 
+**Latest Fix (Nov 22, 2025):**
+- ✅ **Stock Adjustment 403 Error** - Fixed API parameter mismatch. Backend expected query parameters but frontend was sending request body. Updated `stockAPI.adjust()` to use query parameters format: `?productId=...&warehouseId=...&adjustment=...`
+
 ### Common Troubleshooting
 
 #### Issue: Port 8080 already in use

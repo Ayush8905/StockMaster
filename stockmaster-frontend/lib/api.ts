@@ -149,11 +149,7 @@ export const stockAPI = {
         return response.data;
     },
     adjust: async (productId: string, warehouseId: string, adjustment: number) => {
-        const response = await apiClient.put('/stock/adjust', {
-            productId,
-            warehouseId,
-            adjustment,
-        });
+        const response = await apiClient.put(`/stock/adjust?productId=${productId}&warehouseId=${warehouseId}&adjustment=${adjustment}`);
         return response.data;
     },
 };

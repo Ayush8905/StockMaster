@@ -12,6 +12,7 @@ target/
 .classpath
 .project
 
+
 # Compiled class files
 *.class
 
